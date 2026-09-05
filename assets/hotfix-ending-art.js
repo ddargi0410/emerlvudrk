@@ -1,13 +1,15 @@
-/* Hotfix 2026-09-05: rooftop illustration/BGM, hidden-ending art+BGM+typewriter,
-   persistent Watcher badge, true-ending art, and emergency home reset. */
+/* Hotfix 2026-09-05: correct rooftop/hidden artwork mapping, scene BGM,
+   hidden-ending typewriter, persistent Watcher badge, true-ending art, and emergency home. */
 (function(){
   'use strict';
   if (typeof window === 'undefined') return;
 
+  /* IMPORTANT: the two original repository filenames were uploaded with their
+     image contents reversed. Use the content-correct mapping below. */
   const ASSET = {
-    rooftop: 'assets/rooftop-student.webp?v=20260905-1',
-    hidden: 'assets/hidden-ending.webp?v=20260905-1',
-    trueEnding: 'assets/true-ending.webp?v=20260905-1'
+    rooftop: 'assets/hidden-ending.webp?v=20260905-2',       // actually rooftop student CG
+    hidden: 'assets/rooftop-student.webp?v=20260905-2',    // actually HIDDEN ENDING · 감시자 CG
+    trueEnding: 'assets/true-ending.webp?v=20260905-2'
   };
   const BADGE_KEY = 'schoolEscapeWatcherBadge';
   let storyAudio = null;
@@ -37,153 +39,69 @@
     let el=document.getElementById('storyArtOverlay');
     if(el) return el;
     el=document.createElement('section');
-    el.id='storyArtOverlay';
-    el.className='hidden';
+    el.id='storyArtOverlay'; el.className='hidden';
     el.innerHTML=`<div class="story-art-card"><div class="story-art-frame"><img id="storyArtImage" alt="스토리 일러스트"></div><div class="story-art-copy"><div id="storyArtKicker" class="story-art-kicker"></div><h2 id="storyArtTitle" class="story-art-title"></h2><p id="storyArtText" class="story-art-text"></p><div id="storyArtActions" class="story-art-actions"></div></div></div>`;
-    document.body.appendChild(el);
-    return el;
+    document.body.appendChild(el); return el;
   }
 
+  function stopTyping(){ if(typingTimer){clearTimeout(typingTimer);typingTimer=null;} }
   function typeText(el,text,speed=18,done){
-    clearTimeout(typingTimer); typingTimer=null; el.textContent=''; let i=0;
-    const tick=()=>{
-      el.textContent=text.slice(0,i+1); const ch=text[i]||''; i++;
-      if(i<text.length){ typingTimer=setTimeout(tick,speed+(/[.!?…]/.test(ch)?65:(ch===','?28:0))); }
-      else { typingTimer=null; if(done) done(); }
-    };
-    if(!text){ if(done)done(); return; } tick();
+    stopTyping(); el.textContent=''; let i=0;
+    const tick=()=>{ const ch=text[i]||''; el.textContent=text.slice(0,++i); if(i<text.length) typingTimer=setTimeout(tick,speed+(/[.!?…]/.test(ch)?65:(ch===','?28:0))); else {typingTimer=null;if(done)done();} };
+    if(!text){if(done)done();return;} tick();
   }
-
   function showArt({image,kicker,title,text,buttons,typewriter=false}){
     const o=ensureOverlay();
     document.getElementById('storyArtImage').src=image;
     document.getElementById('storyArtKicker').textContent=kicker||'';
     document.getElementById('storyArtTitle').textContent=title||'';
-    const txt=document.getElementById('storyArtText');
-    const actions=document.getElementById('storyArtActions'); actions.innerHTML='';
-    const paintButtons=()=>{
-      actions.innerHTML='';
-      (buttons||[]).forEach((b,i)=>{ const btn=document.createElement('button'); btn.className=i===0?'primary':''; btn.textContent=b.label; btn.onclick=()=>{ stopTyping(); b.onClick(); }; actions.appendChild(btn); });
-    };
-    o.classList.remove('hidden');
-    if(typewriter) typeText(txt,text||'',16,paintButtons); else {txt.textContent=text||'';paintButtons();}
+    const txt=document.getElementById('storyArtText'); const actions=document.getElementById('storyArtActions'); actions.innerHTML='';
+    const paint=()=>{actions.innerHTML='';(buttons||[]).forEach((b,i)=>{const btn=document.createElement('button');btn.className=i===0?'primary':'';btn.textContent=b.label;btn.onclick=()=>{stopTyping();b.onClick();};actions.appendChild(btn);});};
+    o.classList.remove('hidden'); if(typewriter)typeText(txt,text||'',16,paint);else{txt.textContent=text||'';paint();}
   }
-  function hideArt(){ const o=document.getElementById('storyArtOverlay'); if(o)o.classList.add('hidden'); stopTyping(); }
-  function stopTyping(){ if(typingTimer){clearTimeout(typingTimer);typingTimer=null;} }
+  function hideArt(){const o=document.getElementById('storyArtOverlay');if(o)o.classList.add('hidden');stopTyping();}
 
   function stopMusic(){
-    if(!storyAudio) return;
-    try{clearInterval(storyAudio.timer);}catch{}
-    try{storyAudio.nodes.forEach(n=>n.stop&&n.stop());}catch{}
-    try{storyAudio.master.disconnect();}catch{}
-    storyAudio=null;
+    if(!storyAudio)return; try{clearInterval(storyAudio.timer);}catch{} try{storyAudio.nodes.forEach(n=>n.stop&&n.stop());}catch{} try{storyAudio.master.disconnect();}catch{} storyAudio=null;
   }
   function startMusic(kind){
-    stopMusic();
-    let Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;
-    const ctx=window.__storyAudioCtx||(window.__storyAudioCtx=new Ctx());
-    if(ctx.state==='suspended')ctx.resume().catch(()=>{});
-    const master=ctx.createGain();master.gain.value=kind==='hidden'?.18:(kind==='sad'?.16:.19);master.connect(ctx.destination);
-    const nodes=[];
-    const progressions={
-      sad:[[220,261.63,329.63],[196,246.94,293.66],[174.61,220,261.63],[196,246.94,329.63]],
-      hidden:[[87.31,130.81,174.61],[82.41,123.47,164.81],[73.42,116.54,155.56],[77.78,116.54,146.83]],
-      true:[[261.63,329.63,392],[220,329.63,440],[196,293.66,392],[246.94,329.63,392]]
-    };
-    let step=0;
-    const play=()=>{
-      const chord=progressions[kind][step%4]; const now=ctx.currentTime+.03;
-      chord.forEach((f,i)=>{
-        const o=ctx.createOscillator(),g=ctx.createGain();o.type=kind==='hidden'?'sine':'triangle';o.frequency.value=f;
-        g.gain.setValueAtTime(.0001,now);g.gain.linearRampToValueAtTime(kind==='hidden'?.13:.12,now+.18);g.gain.exponentialRampToValueAtTime(.0001,now+2.7);
-        o.connect(g);g.connect(master);o.start(now+i*.025);o.stop(now+2.8);nodes.push(o);
-      });
-      const melody=kind==='hidden'?[261.63,233.08,220]:kind==='sad'?[392,349.23,329.63]:[523.25,587.33,659.25];
-      melody.forEach((f,i)=>setTimeout(()=>{if(!storyAudio)return;const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f;g.gain.value=.05;o.connect(g);g.connect(master);o.start();g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.55);o.stop(ctx.currentTime+.57);nodes.push(o);},450+i*520));
-      step++;
-    };
-    play(); const timer=setInterval(play,2700); storyAudio={ctx,master,nodes,timer,kind};
+    stopMusic(); const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;
+    const ctx=window.__storyAudioCtx||(window.__storyAudioCtx=new Ctx()); if(ctx.state==='suspended')ctx.resume().catch(()=>{});
+    const master=ctx.createGain();master.gain.value=kind==='hidden'?.18:(kind==='sad'?.16:.19);master.connect(ctx.destination);const nodes=[];
+    const progressions={sad:[[220,261.63,329.63],[196,246.94,293.66],[174.61,220,261.63],[196,246.94,329.63]],hidden:[[87.31,130.81,174.61],[82.41,123.47,164.81],[73.42,116.54,155.56],[77.78,116.54,146.83]],true:[[261.63,329.63,392],[220,329.63,440],[196,293.66,392],[246.94,329.63,392]]};
+    let step=0; const play=()=>{const chord=progressions[kind][step%4],now=ctx.currentTime+.03;chord.forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type=kind==='hidden'?'sine':'triangle';o.frequency.value=f;g.gain.setValueAtTime(.0001,now);g.gain.linearRampToValueAtTime(kind==='hidden'?.13:.12,now+.18);g.gain.exponentialRampToValueAtTime(.0001,now+2.7);o.connect(g);g.connect(master);o.start(now+i*.025);o.stop(now+2.8);nodes.push(o);});const melody=kind==='hidden'?[261.63,233.08,220]:kind==='sad'?[392,349.23,329.63]:[523.25,587.33,659.25];melody.forEach((f,i)=>setTimeout(()=>{if(!storyAudio)return;const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f;g.gain.value=.05;o.connect(g);g.connect(master);o.start();g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.55);o.stop(ctx.currentTime+.57);nodes.push(o);},450+i*520));step++;};
+    play();const timer=setInterval(play,2700);storyAudio={ctx,master,nodes,timer,kind};
   }
 
   function updateBadge(){
-    const title=document.querySelector('.title-card'); if(!title)return;
-    const has=localStorage.getItem(BADGE_KEY)==='1';
-    let chip=document.getElementById('watcherBadgeChip');
-    if(has&&!chip){chip=document.createElement('div');chip.id='watcherBadgeChip';chip.className='watcher-badge-chip';chip.textContent='👁 감시자 배지 보유';title.appendChild(chip);}
-    if(!has&&chip)chip.remove();
+    const title=document.querySelector('.title-card');if(!title)return;const has=localStorage.getItem(BADGE_KEY)==='1';let chip=document.getElementById('watcherBadgeChip');
+    if(has&&!chip){chip=document.createElement('div');chip.id='watcherBadgeChip';chip.className='watcher-badge-chip';chip.textContent='👁 감시자 배지 보유';title.appendChild(chip);} if(!has&&chip)chip.remove();
   }
-
-  function goHome(){
-    stopMusic();hideArt();
-    try{if(typeof save==='function')save();}catch{}
-    try{if(typeof closeModal==='function')closeModal();}catch{}
-    try{if(typeof closeDialogue==='function')closeDialogue();}catch{}
-    if(typeof showScreen==='function')showScreen('home');
-    document.body.classList.remove('game-running');updateBadge();
-  }
-
-  function addEmergencyHome(){
-    if(document.getElementById('emergencyHomeBtn'))return;
-    const b=document.createElement('button');b.id='emergencyHomeBtn';b.textContent='🏠 홈';b.title='문제가 생기면 메인 화면으로 돌아가기';
-    b.onclick=()=>{if(confirm('현재 진행을 저장하고 홈으로 돌아갈까요?'))goHome();};document.body.appendChild(b);
-  }
-
-  setInterval(()=>{
-    const game=document.getElementById('game');document.body.classList.toggle('game-running',!!game&&game.classList.contains('active'));
-    updateBadge();
-  },600);
+  function goHome(){stopMusic();hideArt();try{if(typeof save==='function')save();}catch{}try{if(typeof closeModal==='function')closeModal();}catch{}try{if(typeof closeDialogue==='function')closeDialogue();}catch{}if(typeof showScreen==='function')showScreen('home');document.body.classList.remove('game-running');updateBadge();}
+  function addEmergencyHome(){if(document.getElementById('emergencyHomeBtn'))return;const b=document.createElement('button');b.id='emergencyHomeBtn';b.textContent='🏠 홈';b.title='문제가 생기면 메인 화면으로 돌아가기';b.onclick=()=>{if(confirm('현재 진행을 저장하고 홈으로 돌아갈까요?'))goHome();};document.body.appendChild(b);}
+  setInterval(()=>{const game=document.getElementById('game');document.body.classList.toggle('game-running',!!game&&game.classList.contains('active'));updateBadge();},600);
 
   function refineCreatorFace(){
-    if(typeof window.svgCharacter!=='function' || window.__faceRefined) return;
-    const original=window.svgCharacter;
-    window.svgCharacter=function(){
-      let s=original();
-      s=s.replace('M104 140q-10 67 4 118 12 72 72 79 60-7 72-79 14-51 4-118-32-47-76-47-44 0-76 47Z','M98 142q-7 56 7 99 14 58 75 68 61-10 75-68 14-43 7-99-32-44-82-44-50 0-82 44Z');
-      s=s.replace(/cx="139" cy="206" rx="10\.5" ry="14"/g,'cx="137" cy="199" rx="11.5" ry="15"');
-      s=s.replace(/cx="221" cy="206" rx="10\.5" ry="14"/g,'cx="223" cy="199" rx="11.5" ry="15"');
-      s=s.replace(/cx="142" cy="201" rx="3\.8" ry="5\.5"/g,'cx="140" cy="194" rx="4" ry="5.7"');
-      s=s.replace(/cx="224" cy="201" rx="3\.8" ry="5\.5"/g,'cx="226" cy="194" rx="4" ry="5.7"');
-      s=s.replace('M177 221q-7 24 3 31 8 2 13-2','M177 214q-6 20 3 27 8 2 13-2');
-      s=s.replace('M161 276q19 4 38 0','M161 258q19 4 38 0');
-      s=s.replace('M158 275q22 17 44 0-22-7-44 0Z','M158 257q22 16 44 0-22-7-44 0Z');
-      s=s.replace('M159 273q21 16 42 0','M159 255q21 15 42 0');
-      return s;
-    };
-    window.__faceRefined=true;
-    try{renderAvatar();}catch{}
+    if(typeof window.svgCharacter!=='function'||window.__faceRefined)return;const original=window.svgCharacter;
+    window.svgCharacter=function(){let s=original();s=s.replace('M104 140q-10 67 4 118 12 72 72 79 60-7 72-79 14-51 4-118-32-47-76-47-44 0-76 47Z','M98 142q-7 56 7 99 14 58 75 68 61-10 75-68 14-43 7-99-32-44-82-44-50 0-82 44Z');s=s.replace(/cx="139" cy="206" rx="10\.5" ry="14"/g,'cx="137" cy="199" rx="11.5" ry="15"').replace(/cx="221" cy="206" rx="10\.5" ry="14"/g,'cx="223" cy="199" rx="11.5" ry="15"').replace(/cx="142" cy="201" rx="3\.8" ry="5\.5"/g,'cx="140" cy="194" rx="4" ry="5.7"').replace(/cx="224" cy="201" rx="3\.8" ry="5\.5"/g,'cx="226" cy="194" rx="4" ry="5.7"').replace('M177 221q-7 24 3 31 8 2 13-2','M177 214q-6 20 3 27 8 2 13-2').replace('M161 276q19 4 38 0','M161 258q19 4 38 0').replace('M158 275q22 17 44 0-22-7-44 0Z','M158 257q22 16 44 0-22-7-44 0Z').replace('M159 273q21 16 42 0','M159 255q21 15 42 0');return s;};
+    window.__faceRefined=true;try{renderAvatar();}catch{}
   }
 
   window.roofDialogue=function(){
-    if(G.flags.roof)return;
-    startMusic('sad');
-    showArt({image:ASSET.rooftop,kicker:'ROOFTOP MEMORY',title:'옥상의 학생',text:'달빛 아래, 난간에 기대 선 학생의 눈가가 젖어 있다. 바람에 흩날리는 목소리가 마지막으로 누군가 자신의 이야기를 들어주길 바라는 듯하다.',typewriter:true,buttons:[{label:'학생에게 다가간다',onClick:()=>{
-      hideArt();
-      showDialogue('난간의 학생','😢','“아무도 나를 기억하지 못할 거야…”',[
-        ['나는 지금 네 이야기를 듣고 있어. 같이 내려가자.',()=>{G.flags.roof=true;closeDialogue();stopMusic();finalEscape();}],
-        ['말없이 옆에 앉는다.',()=>{G.flags.roof=true;closeDialogue();stopMusic();finalEscape();}]
-      ]);
-    }}]});
+    if(G.flags.roof)return;startMusic('sad');
+    showArt({image:ASSET.rooftop,kicker:'ROOFTOP MEMORY',title:'옥상의 학생',text:'달빛 아래, 난간에 기대 선 학생의 눈가가 젖어 있다. 바람에 흩날리는 목소리가 마지막으로 누군가 자신의 이야기를 들어주길 바라는 듯하다.',typewriter:true,buttons:[{label:'학생에게 다가간다',onClick:()=>{hideArt();showDialogue('난간의 학생','😢','“아무도 나를 기억하지 못할 거야…”',[[ '나는 지금 네 이야기를 듣고 있어. 같이 내려가자.',()=>{G.flags.roof=true;closeDialogue();stopMusic();finalEscape();}],[ '말없이 옆에 앉는다.',()=>{G.flags.roof=true;closeDialogue();stopMusic();finalEscape();}]]);}}]});
   };
 
   window.hiddenEnding=function(){
-    showDialogue('거울 속 나','🙂','거울 속 얼굴이 네 움직임보다 반 박자 늦게 웃는다.',[
-      ['거울에 손을 댄다',()=>{
-        closeDialogue();localStorage.setItem(BADGE_KEY,'1');updateBadge();try{save();}catch{}
-        startMusic('hidden');
-        showArt({image:ASSET.hidden,kicker:'HIDDEN ENDING',title:'감시자',text:'학교를 망하게 하고 모두를 귀신으로 만든 감시자는 처음부터 ‘나’였다. 거울 속 미소가 학교의 모든 진실을 삼켰다.\n\n🏅 감시자 배지 획득',typewriter:true,buttons:[{label:'홈으로 돌아가기',onClick:goHome}]});
-      }],
-      ['물러난다',()=>closeDialogue()]
-    ]);
+    showDialogue('거울 속 나','🙂','거울 속 얼굴이 네 움직임보다 반 박자 늦게 웃는다.',[[ '거울에 손을 댄다',()=>{closeDialogue();localStorage.setItem(BADGE_KEY,'1');updateBadge();try{save();}catch{}startMusic('hidden');showArt({image:ASSET.hidden,kicker:'HIDDEN ENDING',title:'감시자',text:'학교를 망하게 하고 모두를 귀신으로 만든 감시자는 처음부터 ‘나’였다. 거울 속 미소가 학교의 모든 진실을 삼켰다.\n\n🏅 감시자 배지 획득',typewriter:true,buttons:[{label:'홈으로 돌아가기',onClick:goHome}]});}],[ '물러난다',()=>closeDialogue()]]);
   };
 
   window.finalEscape=function(){
     showModal(`<h2>🖼 빈 액자</h2><p>조각들이 맞춰지며 숨겨진 계단이 생겼다. 마지막 문을 <b>10초 안에 30번</b> 두드려라!</p><button id="mashBtn" class="primary" style="width:100%;font-size:22px">문 두드리기 <span id="mashCount">0</span>/30</button><p>남은 시간 <b id="mashTime">10.0</b></p>`);
     let n=0,end=performance.now()+10000,done=false;const b=document.getElementById('mashBtn');
-    b.onclick=()=>{if(done)return;n++;document.getElementById('mashCount').textContent=n;if(n>=30){done=true;clearInterval(t);closeModal();startMusic('true');showArt({image:ASSET.trueEnding,kicker:'TRUE ENDING',title:'현실로',text:`${G.friend||'친구'}와 함께 학교를 빠져나와 현실로 돌아왔다. 끝이라고 생각했던 밤은, 다시 시작되는 우리의 이야기가 되었다.`,typewriter:true,buttons:[{label:'홈으로 돌아가기',onClick:goHome},{label:'다른 모드 도전',onClick:()=>{stopMusic();hideArt();enterZone('hub');}}]});}};
-    const t=setInterval(()=>{const el=document.getElementById('mashTime');if(!el||done)return clearInterval(t);const s=(end-performance.now())/1000;el.textContent=Math.max(0,s).toFixed(1);if(s<=0){done=true;clearInterval(t);closeModal();toast('문이 사라졌다. 다시 액자를 조사해 도전할 수 있다.');G.flags.roof=false;}},50);
+    b.onclick=()=>{if(done)return;n++;document.getElementById('mashCount').textContent=n;if(n>=30){done=true;clearInterval(t);closeModal();startMusic('true');showArt({image:ASSET.trueEnding,kicker:'TRUE ENDING',title:'현실로',text:`${G.friend||'친구'}와 함께 학교를 빠져나와 현실로 돌아왔다. 끝이라고 생각했던 밤이, 이제는 다시 시작되는 우리의 이야기가 되었다.`,typewriter:true,buttons:[{label:'홈으로 돌아가기',onClick:goHome}]});}};
+    const t=setInterval(()=>{const el=document.getElementById('mashTime');if(!el){clearInterval(t);return;}const s=(end-performance.now())/1000;el.textContent=Math.max(0,s).toFixed(1);if(s<=0&&!done){done=true;clearInterval(t);closeModal();toast('문이 사라졌다. 다시 액자를 조사해 도전할 수 있다.');G.flags.roof=false;}},50);
   };
 
-  window.addEventListener('error',()=>{if(!document.getElementById('storyArtOverlay')?.classList.contains('hidden'))return;toast('오류가 발생했어. 오른쪽 아래 🏠 홈 버튼으로 복귀할 수 있어.');});
-
-  injectStyle();ensureOverlay();addEmergencyHome();updateBadge();refineCreatorFace();
+  injectStyle();ensureOverlay();addEmergencyHome();updateBadge();refineCreatorFace();setTimeout(refineCreatorFace,250);
 })();
