@@ -1,6 +1,7 @@
-/* Hotfix 2026-09-05: final door mash timer 10 seconds / 30 clicks. */
+/* Hotfix 2026-09-05: final door mash timer 10 seconds / 30 clicks + mobile SPACE bridge. */
 (function(){
   if (typeof window === 'undefined') return;
+
   window.finalEscape = function(){
     showModal(`<h2>🖼 빈 액자</h2><p>조각들이 맞춰지며 숨겨진 계단이 생겼다. 마지막 문을 <b>10초 안에 30번</b> 두드려라!</p><button id="mashBtn" class="primary" style="width:100%;font-size:22px">문 두드리기 <span id="mashCount">0</span>/30</button><p>남은 시간 <b id="mashTime">10.0</b></p>`);
     let n=0,end=performance.now()+10000;
@@ -25,4 +26,39 @@
       }
     },50);
   };
+
+  // Mobile has no physical SPACE key. Make the on-screen JUMP button behave
+  // exactly like SPACE during timing mini-games, and like a harmless jump elsewhere.
+  const mobileSpace = document.querySelector('#mobileControls [data-action="dodge"]');
+  if(mobileSpace){
+    mobileSpace.textContent = 'JUMP';
+    mobileSpace.onclick = function(e){
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Stair timing game listens for a real keydown event in capture phase.
+      if(document.getElementById('timingDot')){
+        const down = new KeyboardEvent('keydown', {
+          key: ' ',
+          code: 'Space',
+          bubbles: true,
+          cancelable: true
+        });
+        document.dispatchEvent(down);
+
+        const up = new KeyboardEvent('keyup', {
+          key: ' ',
+          code: 'Space',
+          bubbles: true,
+          cancelable: true
+        });
+        setTimeout(()=>document.dispatchEvent(up), 0);
+        return;
+      }
+
+      // Outside the timing game SPACE is only a visual jump, never displacement.
+      if(typeof window.dodge === 'function') window.dodge();
+      else if(typeof dodge === 'function') dodge();
+    };
+  }
 })();
