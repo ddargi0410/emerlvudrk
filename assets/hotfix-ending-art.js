@@ -133,6 +133,26 @@
     updateBadge();
   },600);
 
+  function refineCreatorFace(){
+    if(typeof window.svgCharacter!=='function' || window.__faceRefined) return;
+    const original=window.svgCharacter;
+    window.svgCharacter=function(){
+      let s=original();
+      s=s.replace('M104 140q-10 67 4 118 12 72 72 79 60-7 72-79 14-51 4-118-32-47-76-47-44 0-76 47Z','M98 142q-7 56 7 99 14 58 75 68 61-10 75-68 14-43 7-99-32-44-82-44-50 0-82 44Z');
+      s=s.replace(/cx="139" cy="206" rx="10\.5" ry="14"/g,'cx="137" cy="199" rx="11.5" ry="15"');
+      s=s.replace(/cx="221" cy="206" rx="10\.5" ry="14"/g,'cx="223" cy="199" rx="11.5" ry="15"');
+      s=s.replace(/cx="142" cy="201" rx="3\.8" ry="5\.5"/g,'cx="140" cy="194" rx="4" ry="5.7"');
+      s=s.replace(/cx="224" cy="201" rx="3\.8" ry="5\.5"/g,'cx="226" cy="194" rx="4" ry="5.7"');
+      s=s.replace('M177 221q-7 24 3 31 8 2 13-2','M177 214q-6 20 3 27 8 2 13-2');
+      s=s.replace('M161 276q19 4 38 0','M161 258q19 4 38 0');
+      s=s.replace('M158 275q22 17 44 0-22-7-44 0Z','M158 257q22 16 44 0-22-7-44 0Z');
+      s=s.replace('M159 273q21 16 42 0','M159 255q21 15 42 0');
+      return s;
+    };
+    window.__faceRefined=true;
+    try{renderAvatar();}catch{}
+  }
+
   window.roofDialogue=function(){
     if(G.flags.roof)return;
     startMusic('sad');
@@ -165,5 +185,5 @@
 
   window.addEventListener('error',()=>{if(!document.getElementById('storyArtOverlay')?.classList.contains('hidden'))return;toast('오류가 발생했어. 오른쪽 아래 🏠 홈 버튼으로 복귀할 수 있어.');});
 
-  injectStyle();ensureOverlay();addEmergencyHome();updateBadge();
+  injectStyle();ensureOverlay();addEmergencyHome();updateBadge();refineCreatorFace();
 })();
