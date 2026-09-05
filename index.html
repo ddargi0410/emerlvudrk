@@ -16,43 +16,111 @@
       <h1>학교탈출<br><span>감시자의 밤</span></h1>
       <p>폐교가 된 학교를 직접 걸어 다니며 단서를 찾고, 숨고, 싸우고, 뛰어넘어 탈출하세요.</p>
       <p class="warning">⚠ 깜짝 연출과 추격 장면이 포함되어 있습니다.</p>
-      <div class="home-actions"><button id="newGameBtn" class="primary">새 게임</button><button id="continueBtn">이어하기</button></div>
+      <div class="home-actions">
+        <button id="newGameBtn" class="primary">새 게임</button>
+        <button id="continueBtn">이어하기</button>
+      </div>
       <div class="key-strip"><b>WASD</b> 이동 · <b>E</b> 조사 · <b>SPACE</b> 회피/점프 · <b>Q</b> 공격 · <b>F</b> 손전등 · <b>0</b> 시점</div>
     </div>
   </section>
+
   <section id="creator" class="screen">
     <div class="creator-layout">
       <div class="portrait-card glass">
-        <svg id="avatarSvg" viewBox="0 0 360 520" aria-label="캐릭터 미리보기"><defs><linearGradient id="hairShine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="clothShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".24"/></linearGradient><filter id="soft"><feDropShadow dx="0" dy="10" stdDeviation="9" flood-opacity=".34"/></filter></defs><g id="avatarArt" filter="url(#soft)"></g></svg>
+        <svg id="avatarSvg" viewBox="0 0 360 520" aria-label="캐릭터 미리보기">
+          <defs>
+            <linearGradient id="hairShine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+            <linearGradient id="clothShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".24"/></linearGradient>
+            <filter id="soft"><feDropShadow dx="0" dy="10" stdDeviation="9" flood-opacity=".34"/></filter>
+          </defs>
+          <g id="avatarArt" filter="url(#soft)"></g>
+        </svg>
         <div class="portrait-name"><b id="previewName">지우</b><span>17 · 생존자</span></div>
       </div>
+
       <div class="creator-panel glass">
-        <div class="creator-head"><div><div class="eyebrow">CHARACTER CREATOR</div><h2>주인공 만들기</h2></div><div class="creator-tip">앞머리와 옆머리를 얼굴선에 맞춰 다시 설계했어.</div></div>
+        <div class="creator-head">
+          <div><div class="eyebrow">CHARACTER CREATOR</div><h2>주인공 만들기</h2></div>
+          <div class="creator-tip">앞머리와 옆머리를 얼굴선에 맞춰 다시 설계했어.</div>
+        </div>
         <div class="form-grid">
-          <label>이름<input id="charName" value="지우" maxlength="10"></label><label>성별<select id="gender"><option value="female">여자</option><option value="male">남자</option></select></label>
-          <label>피부<select id="skin"><option value="#f3cfb0">밝은 베이지</option><option value="#ddb28f">웜 베이지</option><option value="#bd8060">브라운</option><option value="#8c5d48">딥 브라운</option></select></label><label>눈 색<select id="eyeColor"><option value="#50382f">초코</option><option value="#6d5aa8">바이올렛</option><option value="#3e7570">그린</option><option value="#477aa2">블루</option></select></label>
-          <label>눈매<select id="eyeStyle"><option value="soft">부드러운 눈매</option><option value="sharp">선명한 눈매</option><option value="round">동그란 눈매</option></select></label><label>입<select id="mouthStyle"><option value="smile">옅은 미소</option><option value="calm">차분한 입</option><option value="bold">또렷한 입술</option></select></label>
-          <label>헤어스타일<select id="hairStyle"><option value="long">레이어드 롱</option><option value="ponytail">포니테일</option><option value="bob">단정한 보브</option><option value="short">쇼트 레이어</option></select></label><label>머리 색<select id="hairColor"><option value="#2b211f">다크 브라운</option><option value="#171a20">블랙</option><option value="#6d3543">와인</option><option value="#9d6b3d">골드 브라운</option></select></label>
-          <label>교복<select id="clothColor"><option value="#20344d">네이비</option><option value="#342b4c">퍼플</option><option value="#33463d">포레스트</option><option value="#4b2d35">버건디</option></select></label><label>리본/넥타이<select id="accentColor"><option value="#9f314c">레드</option><option value="#315c8c">블루</option><option value="#73518f">퍼플</option><option value="#876a28">골드</option></select></label>
+          <label>이름<input id="charName" value="지우" maxlength="10"></label>
+          <label>성별<select id="gender"><option value="female">여자</option><option value="male">남자</option></select></label>
+          <label>피부<select id="skin"><option value="#f3cfb0">밝은 베이지</option><option value="#ddb28f">웜 베이지</option><option value="#bd8060">브라운</option><option value="#8c5d48">딥 브라운</option></select></label>
+          <label>눈 색<select id="eyeColor"><option value="#50382f">초코</option><option value="#6d5aa8">바이올렛</option><option value="#3e7570">그린</option><option value="#477aa2">블루</option></select></label>
+          <label>눈매<select id="eyeStyle"><option value="soft">부드러운 눈매</option><option value="sharp">선명한 눈매</option><option value="round">동그란 눈매</option></select></label>
+          <label>입<select id="mouthStyle"><option value="smile">옅은 미소</option><option value="calm">차분한 입</option><option value="bold">또렷한 입술</option></select></label>
+          <label>헤어스타일<select id="hairStyle"><option value="long">레이어드 롱</option><option value="ponytail">포니테일</option><option value="bob">단정한 보브</option><option value="short">쇼트 레이어</option></select></label>
+          <label>머리 색<select id="hairColor"><option value="#2b211f">다크 브라운</option><option value="#171a20">블랙</option><option value="#6d3543">와인</option><option value="#9d6b3d">골드 브라운</option></select></label>
+          <label>교복<select id="clothColor"><option value="#20344d">네이비</option><option value="#342b4c">퍼플</option><option value="#33463d">포레스트</option><option value="#4b2d35">버건디</option></select></label>
+          <label>리본/넥타이<select id="accentColor"><option value="#9f314c">레드</option><option value="#315c8c">블루</option><option value="#73518f">퍼플</option><option value="#876a28">골드</option></select></label>
         </div>
         <div class="creator-actions"><button id="creatorBack">뒤로</button><button id="startGameBtn" class="primary">학교로 들어가기</button></div>
       </div>
     </div>
   </section>
+
   <section id="game" class="screen">
-    <canvas id="gameCanvas" width="1280" height="720"></canvas><div id="worldTint"></div>
-    <div id="topLeft" class="glass hud-box"><div class="zone-name" id="zoneName">폐교 정문</div><div id="objective">교문 자물쇠를 조사하라.</div><div class="controls-mini">WASD 이동 · E 조사 · SPACE 회피 · Q 공격 · F 손전등</div></div>
-    <div id="statusHud" class="glass"><div class="mini-avatar" id="miniAvatar"></div><div class="hud-main"><div class="hud-name-line"><b id="hudName">지우</b><span id="mood">긴장</span></div><div class="meter"><div id="hpFill"></div></div><div class="hud-small"><span id="hpText">1000 / 1000</span><span id="lifeText">♥♥♥♥♥</span></div><div class="stat-row"><span>ATK <b id="atkText">40</b></span><span>ARM <b id="armorText">0</b></span><span>KEY <b id="keyText">0</b></span></div></div></div>
-    <div id="inventoryBar" class="glass"><div class="slot">🔦<span>F</span></div><div class="slot">🗡️<span>Q</span></div><div class="slot">💨<span>SPACE</span></div><div class="slot">✋<span>E</span></div><div class="slot">👁️<span>0</span></div></div>
-    <div id="interactionPrompt" class="prompt hidden"><b>E</b><span>조사</span></div><div id="toast" class="toast"></div>
-    <div id="dialogue" class="dialogue glass hidden"><div id="dialoguePortrait"></div><div class="dialogue-body"><div id="speaker"></div><div id="dialogueText"></div><div id="dialogueChoices"></div></div></div>
-    <div id="modalLayer" class="modal-layer hidden"><div id="modalCard" class="modal-card glass"></div></div>
-    <div id="mobileControls"><div class="dpad"><button data-key="KeyW">▲</button><button data-key="KeyA">◀</button><button data-key="KeyS">▼</button><button data-key="KeyD">▶</button></div><div class="action-pad"><button data-action="attack">Q</button><button data-action="dodge">SPACE</button><button data-action="interact">E</button></div></div>
+    <canvas id="gameCanvas" width="1280" height="720"></canvas>
+    <div id="worldTint"></div>
+
+    <div id="topLeft" class="glass hud-box">
+      <div class="zone-name" id="zoneName">폐교 정문</div>
+      <div id="objective">교문 자물쇠를 조사하라.</div>
+      <div class="controls-mini">WASD 이동 · E 조사 · SPACE 회피 · Q 공격 · F 손전등</div>
+    </div>
+
+    <div id="statusHud" class="glass">
+      <div class="mini-avatar" id="miniAvatar"></div>
+      <div class="hud-main">
+        <div class="hud-name-line"><b id="hudName">지우</b><span id="mood">긴장</span></div>
+        <div class="meter"><div id="hpFill"></div></div>
+        <div class="hud-small"><span id="hpText">1000 / 1000</span><span id="lifeText">♥♥♥♥♥</span></div>
+        <div class="stat-row"><span>ATK <b id="atkText">40</b></span><span>ARM <b id="armorText">0</b></span><span>KEY <b id="keyText">0</b></span></div>
+      </div>
+    </div>
+
+    <div id="inventoryBar" class="glass">
+      <div class="slot" data-item="flashlight">🔦<span>F</span></div>
+      <div class="slot" data-item="weapon">🗡️<span>Q</span></div>
+      <div class="slot" data-item="dodge">💨<span>SPACE</span></div>
+      <div class="slot" data-item="interact">✋<span>E</span></div>
+      <div class="slot" data-item="view">👁️<span>0</span></div>
+    </div>
+
+    <div id="interactionPrompt" class="prompt hidden"><b>E</b><span>조사</span></div>
+    <div id="toast" class="toast"></div>
+
+    <div id="dialogue" class="dialogue glass hidden">
+      <div id="dialoguePortrait"></div>
+      <div class="dialogue-body">
+        <div id="speaker"></div>
+        <div id="dialogueText"></div>
+        <div id="dialogueChoices"></div>
+      </div>
+    </div>
+
+    <div id="modalLayer" class="modal-layer hidden">
+      <div id="modalCard" class="modal-card glass"></div>
+    </div>
+
+    <div id="mobileControls">
+      <div class="dpad">
+        <button data-key="KeyW">▲</button>
+        <button data-key="KeyA">◀</button><button data-key="KeyS">▼</button><button data-key="KeyD">▶</button>
+      </div>
+      <div class="action-pad">
+        <button data-action="attack">Q</button>
+        <button data-action="dodge">SPACE</button>
+        <button data-action="interact">E</button>
+      </div>
+    </div>
   </section>
 </div>
 <script src="assets/game-v4-core1.js?v=20260905-2"></script>
 <script src="assets/game-v4-core2.js?v=20260905-2"></script>
 <script src="assets/game-v4-content.js?v=20260905-2"></script>
 <script src="assets/game-v4-engine.js?v=20260905-2"></script>
+<script src="assets/hotfix-player-visibility.js?v=20260905-3"></script>
 </body>
 </html>
