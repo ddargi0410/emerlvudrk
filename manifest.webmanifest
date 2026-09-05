@@ -1,0 +1,14 @@
+{
+  "name": "학교탈출: 감시자의 밤",
+  "short_name": "학교탈출",
+  "description": "스토리 선택형 학교 탈출 공포게임",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#050a10",
+  "theme_color": "#071019",
+  "lang": "ko-KR",
+  "orientation": "landscape",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
