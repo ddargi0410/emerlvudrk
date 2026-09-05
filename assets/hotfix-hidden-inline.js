@@ -4,7 +4,7 @@
   if (typeof window === 'undefined') return;
 
   const BADGE_KEY = 'schoolEscapeWatcherBadge';
-  const IMAGE_PART = 'assets/hidden-ending-inline.b64?v=20260905-4';
+  const IMAGE_PART = 'assets/hidden-ending-small.b64?v=20260905-5';
   let hiddenImagePromise = null;
   let hiddenAudio = null;
   let hiddenTypingTimer = null;
